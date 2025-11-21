@@ -1,23 +1,42 @@
-name: ci-js-sonarcloud
-on: 
+name: CI JavaScript SonarCloud
+
+on:
   pull_request:
-    branches: [ main, develop ]
+    branches: [main, develop]
   push:
-    branches: [ main, develop ]
+    branches: [main, develop]
 
 jobs:
-  run-ci-js-sonarcloud:
+  test-and-sonar:
+    name: Test and SonarCloud Analysis
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v2
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          node-version: '24.11.1
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
       - name: Install dependencies
-        run: npm install
-      - name: Run tests
+        run: npm ci
+      - name: Run tests with coverage
         run: npm test -- --coverage
+      - name: Display coverage summary
+        run: |
+          echo "📊 Coverage Summary:"
+          cat coverage/lcov-report/index.html | grep -o 'All files</span>.*</tr>' | head -1 || echo "Coverage report generated"
+      - name: Verify coverage file exists
+        run: |
+          if [ ! -f coverage/lcov.info ]; then
+            echo "❌ ERROR: coverage/lcov.info not found!"
+            exit 1
+          fi
+          echo "✅ coverage/lcov.info exists"
+          echo "File size: $(wc -l < coverage/lcov.info) lines"
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
         env:
