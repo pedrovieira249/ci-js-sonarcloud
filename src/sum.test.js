@@ -19,6 +19,10 @@ describe('Sub function', () => {
     expect(sub(5, 2)).toBe(3);
   });
 
+  test('subtracts 2 from 5 to equal 3', () => {
+    expect(sub(5, 2)).toBe(3);
+  });
+
   test('subtracts 10 from 25 to equal 15', () => {
     expect(sub(25, 10)).toBe(15);
   });
