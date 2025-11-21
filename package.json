@@ -4,26 +4,12 @@
   "description": "JavaScript project with Jest and SonarCloud integration",
   "main": "sum.js",
   "scripts": {
-    "test": "jest",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch"
+    "test": "jest --coverage --watchAll=false"
   },
   "keywords": ["jest", "sonarcloud", "ci"],
   "author": "",
   "license": "ISC",
   "devDependencies": {
     "jest": "^29.7.0"
-  },
-  "jest": {
-    "testEnvironment": "node",
-    "coverageDirectory": "coverage",
-    "collectCoverageFrom": [
-      "*.js",
-      "!*.test.js",
-      "!*.spec.js",
-      "!coverage/**",
-      "!node_modules/**"
-    ],
-    "coverageReporters": ["text", "lcov", "html"]
   }
 }
