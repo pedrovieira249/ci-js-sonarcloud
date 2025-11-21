@@ -20,20 +20,86 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-      - name: Run tests with coverage
-        run: npm test -- --coverage
-      - name: Display coverage summary
+
+      - name: Verify package.json
         run: |
-          echo "📊 Coverage Summary:"
-          cat coverage/lcov-report/index.html | grep -o 'All files</span>.*</tr>' | head -1 || echo "Coverage report generated"
-      - name: Verify coverage file exists
-        run: |
-          if [ ! -f coverage/lcov.info ]; then
-            echo "❌ ERROR: coverage/lcov.info not found!"
+          echo "📦 Checking package.json..."
+          if [ ! -f package.json ]; then
+            echo "❌ ERROR: package.json not found!"
+            ls -la
             exit 1
           fi
-          echo "✅ coverage/lcov.info exists"
-          echo "File size: $(wc -l < coverage/lcov.info) lines"
+          echo "✅ package.json found"
+          echo ""
+          echo "📄 Contents:"
+          cat package.json
+
+      - name: Clean install
+        run: |
+          echo "🧹 Cleaning previous installations..."
+          rm -rf node_modules package-lock.json
+          echo "✅ Cleanup complete"
+
+      - name: Install dependencies
+        run: |
+          echo "📥 Installing dependencies..."
+          npm install --verbose
+          echo "✅ Installation complete"
+
+      - name: Verify node_modules
+        run: |
+          echo "🔍 Checking node_modules..."
+          if [ ! -d node_modules ]; then
+            echo "❌ ERROR: node_modules not created!"
+            exit 1
+          fi
+          echo "✅ node_modules exists"
+          echo ""
+          echo "📦 Installed packages:"
+          npm list --depth=0
+
+      - name: Verify Jest installation
+        run: |
+          echo "🔍 Checking Jest installation..."
+          
+          if [ ! -d node_modules/jest ]; then
+            echo "❌ ERROR: Jest not installed in node_modules!"
+            echo "📁 node_modules contents:"
+            ls -la node_modules/ | head -20
+            exit 1
+          fi
+          
+          if [ ! -f node_modules/.bin/jest ]; then
+            echo "❌ ERROR: Jest binary not found!"
+            echo "📁 .bin contents:"
+            ls -la node_modules/.bin/ || echo "No .bin directory"
+            exit 1
+          fi
+          
+          echo "✅ Jest installed correctly"
+          echo "Jest location: $(which jest || echo 'not in PATH')"
+          echo "Jest via npx: $(npx jest --version)"
+
+      - name: Run tests with coverage
+        run: |
+          echo "🧪 Running tests..."
+          npm test
+          echo "✅ Tests completed"
+
+      - name: Verify coverage file
+        run: |
+          echo "📊 Checking coverage..."
+          if [ ! -f coverage/lcov.info ]; then
+            echo "❌ ERROR: coverage/lcov.info not found!"
+            echo "📁 Directory structure:"
+            ls -laR
+            exit 1
+          fi
+          echo "✅ Coverage file exists"
+          echo "📄 File size: $(wc -l < coverage/lcov.info) lines"
+          echo ""
+          echo "📄 First 10 lines:"
+          head -10 coverage/lcov.info
       - name: SonarQube Scan
         uses: SonarSource/sonarqube-scan-action@master
         env:
